@@ -1,12 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const router = require('./routes/users');
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/mestodb', {
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
 });
+
+app.use('/users', router);
 
 app.listen(3000);
