@@ -1,7 +1,7 @@
-const User = require('../models/user');
+const user = require('../models/user');
 
 module.exports.getUsers = (req, res, next) => {
-  User.find({})
+  user.find({})
     .then((users) => res.status(200).send({ data: users }))
     .catch(next);
 };
@@ -9,19 +9,19 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
 
-  User.findById(userId)
-    .then((user) => {
-      if (!user) {
+  user.findById(userId)
+    .then((data) => {
+      if (!data) {
         throw console.log('Пользователь не найден');
       }
-      res.status(200).send({ data: user });
+      res.status(200).send({ data });
     })
     .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
-  User.create({
+  user.create({
     name, about, avatar,
   })
     .then(() => res.status(200).send({
@@ -29,5 +29,31 @@ module.exports.createUser = (req, res, next) => {
         name, about, avatar,
       },
     }))
+    .catch(next);
+};
+
+module.exports.editUser = (req, res, next) => {
+  const userId = req.user._id;
+  const { name, about } = req.body;
+  user.findByIdAndUpdate(userId, { name, about })
+    .then((data) => {
+      if (!data) {
+        throw console.log('Пользователь не найден');
+      }
+      res.status(200).send({ data });
+    })
+    .catch(next);
+};
+
+module.exports.editAvatar = (req, res, next) => {
+  const userId = req.user._id;
+  const { avatar } = req.body;
+  user.findByIdAndUpdate(userId, { avatar })
+    .then((data) => {
+      if (!data) {
+        throw console.log('Пользователь не найден');
+      }
+      res.status(200).send({ data });
+    })
     .catch(next);
 };

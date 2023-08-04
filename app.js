@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const router = require('./routes/users');
+const userRouter = require('./routes/users');
+const cardRouter = require('./routes/cards');
 
 const app = express();
 
@@ -11,6 +12,16 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,
 });
 
-app.use('/users', router);
+app.use((req, res, next) => {
+  req.user = {
+    _id: '64cc1389ed168ed73015286d',
+  };
+
+  next();
+});
+
+app.use('/users', userRouter);
+
+app.use('/cards', cardRouter);
 
 app.listen(3000);
