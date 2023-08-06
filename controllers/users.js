@@ -1,12 +1,19 @@
 const user = require('../models/user');
 
 module.exports.getUsers = (req, res, next) => {
+  const ERROR_CODE = 400;
   const SERVER_ERROR = 500;
   return user.find({})
     .then((data) => {
       res.status(200).send({ data });
     })
-    .catch(() => res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' }))
+    .catch((err) => {
+      if (err) {
+        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
+      } else {
+        res.status(SERVER_ERROR).send('Server error');
+      }
+    })
     .catch(next);
 };
 
