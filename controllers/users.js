@@ -1,24 +1,18 @@
 const user = require('../models/user');
 
 module.exports.getUsers = (req, res, next) => {
-  const ERROR_CODE = 400;
   const SERVER_ERROR = 500;
   return user.find({})
     .then((data) => {
       res.status(200).send({ data });
     })
-    .catch((err) => {
-      if (err) {
-        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
-      } else {
-        res.status(SERVER_ERROR).send('Server error');
-      }
-    })
+    .catch(() => { res.status(SERVER_ERROR).send('Server error'); })
     .catch(next);
 };
 
 module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
+  const ERROR_CODE = 400;
   const ERROR_NOT_FOUND = 404;
   const SERVER_ERROR = 500;
   return user.findById(userId)
@@ -36,7 +30,13 @@ module.exports.getUserById = (req, res, next) => {
         );
       }
     })
-    .catch(() => res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(ERROR_CODE).send({ message: err.message });
+      } else {
+        res.status(SERVER_ERROR).send('Server error');
+      }
+    })
     .catch(next);
 };
 
@@ -56,7 +56,7 @@ module.exports.createUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
       } else if (err.name === 'CastError') {
-        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
+        res.status(ERROR_CODE).send({ message: err.message });
       } else {
         res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
       }
