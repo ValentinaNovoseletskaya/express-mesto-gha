@@ -11,6 +11,7 @@
     "dev": "nodemon app.js"
   },
   "dependencies": {
+    "body-parser": "^1.20.2",
     "eslint": "^8.46.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.28.0",

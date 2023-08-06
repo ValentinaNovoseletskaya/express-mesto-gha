@@ -1,59 +1,115 @@
 const user = require('../models/user');
 
 module.exports.getUsers = (req, res, next) => {
-  user.find({})
-    .then((users) => res.status(200).send({ data: users }))
+  const ERROR_CODE = 400;
+  return user.find({})
+    .then((data) => {
+      res.status(200).send({ data });
+    })
+    .catch((err) => {
+      if (err) {
+        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
+      } else {
+        res.status(500).send('Server error');
+      }
+    })
     .catch(next);
 };
 
 module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
 
-  user.findById(userId)
+  return user.findById(userId)
     .then((data) => {
       if (!data) {
-        throw console.log('Пользователь не найден');
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else {
+        const {
+          name, about, avatar, id,
+        } = data;
+        res.status(200).send(
+          {
+            name, about, avatar, _id: id,
+          },
+        );
       }
-      res.status(200).send({ data });
     })
+    .catch(() => res.status(500).send('Server error'))
     .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
-  const { name, about, avatar } = req.body;
-  user.create({
-    name, about, avatar,
-  })
-    .then(() => res.status(200).send({
-      data: {
-        name, about, avatar,
-      },
-    }))
+  const ERROR_CODE = 400;
+  return user.create({ ...req.body })
+    .then((data) => {
+      const {
+        name, about, avatar, id,
+      } = data;
+      return res.status(201).send({
+        name, about, avatar, _id: id,
+      });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
+      } else if (err.name === 'CastError') {
+        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
+      } else {
+        res.status(500).send('Server error');
+      }
+    })
     .catch(next);
 };
 
 module.exports.editUser = (req, res, next) => {
+  const ERROR_CODE = 400;
   const userId = req.user._id;
   const { name, about } = req.body;
-  user.findByIdAndUpdate(userId, { name, about })
+  return user.findByIdAndUpdate(userId, { name, about }, { runValidators: true, new: true })
     .then((data) => {
       if (!data) {
-        throw console.log('Пользователь не найден');
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else {
+        res.status(200).send({ data });
       }
-      res.status(200).send({ data });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
+      } else if (err.name === 'CastError') {
+        res.status(ERROR_CODE).send({ message: err.message });
+      } else {
+        res.status(500).send('Server error');
+      }
     })
     .catch(next);
 };
 
 module.exports.editAvatar = (req, res, next) => {
+  const ERROR_CODE = 400;
   const userId = req.user._id;
   const { avatar } = req.body;
-  user.findByIdAndUpdate(userId, { avatar })
+  return user.findByIdAndUpdate(userId, { avatar }, { runValidators: true, new: true })
     .then((data) => {
       if (!data) {
-        throw console.log('Пользователь не найден');
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else {
+        const {
+          name, about, currAvatar, id,
+        } = data;
+        res.status(200).send({
+          name, about, currAvatar, _id: id,
+        });
       }
-      res.status(200).send({ data });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
+      } else if (err.name === 'CastError') {
+        res.status(ERROR_CODE).send({ message: err.message });
+      } else {
+        res.status(500).send('Server error');
+      }
     })
     .catch(next);
 };
