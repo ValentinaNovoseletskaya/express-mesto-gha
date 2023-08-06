@@ -6,7 +6,7 @@ module.exports.getUsers = (req, res, next) => {
     .then((data) => {
       res.status(200).send({ data });
     })
-    .catch(res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' }))
+    .catch(() => res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' }))
     .catch(next);
 };
 
