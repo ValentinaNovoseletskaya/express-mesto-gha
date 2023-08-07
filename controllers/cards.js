@@ -1,29 +1,21 @@
 const card = require('../models/card');
+const { ERROR_CODE, ERROR_NOT_FOUND, SERVER_ERROR } = require('../utils/constants');
 
-module.exports.getCards = (req, res, next) => {
-  const ERROR_CODE = 400;
-  const SERVER_ERROR = 500;
-  return card.find({})
+module.exports.getCards = (req, res) => {
+  card.find({})
     .then((cards) => res.status(200).send({ data: cards }))
-    .catch((err) => {
-      if (err) {
-        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
-      } else {
-        res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
-      }
-    })
-    .catch(next);
+    .catch(() => {
+      res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
-module.exports.createCard = (req, res, next) => {
-  const ERROR_CODE = 400;
-  const SERVER_ERROR = 500;
+module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user;
-  return card.create({
+  card.create({
     name, link, owner,
   })
-    .then((data) => res.status(200).send({ data }))
+    .then((data) => res.status(201).send({ data }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
@@ -32,38 +24,28 @@ module.exports.createCard = (req, res, next) => {
       } else {
         res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
       }
-    })
-    .catch(next);
+    });
 };
 
-module.exports.deleteCard = (req, res, next) => {
+module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
-  const ERROR_CODE = 400;
-  const ERROR_NOT_FOUND = 404;
-  const SERVER_ERROR = 500;
-
   return card.findByIdAndRemove(cardId)
+    .orFail(new Error('NotValidId'))
     .then((data) => {
-      if (!data) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      } else {
-        res.status(200).send({ data });
-      }
+      res.status(200).send({ data });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotValidId') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      } else if (err.name === 'CastError') {
         res.status(ERROR_CODE).send({ message: err.message });
       } else {
         res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
       }
-    })
-    .catch(next);
+    });
 };
 
-module.exports.likeCard = (req, res, next) => {
-  const ERROR_CODE = 400;
-  const ERROR_NOT_FOUND = 404;
-  const SERVER_ERROR = 500;
+module.exports.likeCard = (req, res) => {
   const { cardId } = req.params;
   const userId = req.user._id;
   return card.findByIdAndUpdate(
@@ -71,47 +53,40 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: userId } },
     { new: true },
   )
+    .orFail(new Error('NotValidId'))
     .then((data) => {
-      if (!data) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      } else {
-        res.status(200).send({ data });
-      }
+      res.status(200).send({ data });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotValidId') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      } else if (err.name === 'CastError') {
         res.status(ERROR_CODE).send({ message: err.message });
       } else {
         res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
       }
-    })
-    .catch(next);
+    });
 };
 
-module.exports.dislikeCard = (req, res, next) => {
+module.exports.dislikeCard = (req, res) => {
   const { cardId } = req.params;
   const userId = req.user._id;
-  const ERROR_CODE = 400;
-  const ERROR_NOT_FOUND = 404;
-  const SERVER_ERROR = 500;
   return card.findByIdAndUpdate(
     cardId,
     { $pull: { likes: userId } },
     { new: true },
   )
+    .orFail(new Error('NotValidId'))
     .then((data) => {
-      if (!data) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      } else {
-        res.status(200).send({ data });
-      }
+      res.status(200).send({ data });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotValidId') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      } else if (err.name === 'CastError') {
         res.status(ERROR_CODE).send({ message: err.message });
       } else {
         res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
       }
-    })
-    .catch(next);
+    });
 };

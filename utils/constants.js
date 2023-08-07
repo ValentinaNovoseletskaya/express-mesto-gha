@@ -1,0 +1,5 @@
+const ERROR_CODE = 400;
+const ERROR_NOT_FOUND = 404;
+const SERVER_ERROR = 500;
+
+module.exports = { ERROR_CODE, ERROR_NOT_FOUND, SERVER_ERROR };
