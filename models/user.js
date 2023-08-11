@@ -23,6 +23,13 @@ const userSchema = new mongoose.Schema(
       },
       required: [true, 'Поле "ссылка на аватар" должно быть заполнено'],
     },
+    email: {
+      required: true,
+      unique: true,
+    },
+    password: {
+      required: true,
+    },
   },
   { versionKey: false },
 );
