@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const user = require('../models/user');
 const { ERROR_CODE, ERROR_NOT_FOUND, SERVER_ERROR } = require('../utils/constants');
 
@@ -35,23 +36,46 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  user.create({ ...req.body })
-    .then((data) => {
-      const {
-        name, about, avatar, id, email, password,
-      } = data;
-      return res.status(201).send({
-        name, about, avatar, _id: id, email, password,
-      });
+  bcrypt.hash(req.body.password, 10)
+    .then((hash) => user.create({ ...req.body, password: hash })
+      .then((data) => {
+        const {
+          name, about, avatar, id, email, password,
+        } = data;
+        return res.status(201).send({
+          name, about, avatar, _id: id, email, password,
+        });
+      })
+      .catch((err) => {
+        if (err.name === 'ValidationError') {
+          res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
+        } else if (err.name === 'CastError') {
+          res.status(ERROR_CODE).send({ message: err.message });
+        } else {
+          res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
+        }
+      }));
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  user.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      if (!matched) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+      res.send({ message: 'Всё верно!' });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({ message: `${Object.values(err.errors).map((error) => error.message).join(', ')}` });
-      } else if (err.name === 'CastError') {
-        res.status(ERROR_CODE).send({ message: err.message });
-      } else {
-        res.status(SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
-      }
+      res
+        .status(401)
+        .send({ message: err.message });
     });
 };
 
