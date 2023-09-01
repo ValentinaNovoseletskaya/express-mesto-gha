@@ -30,7 +30,8 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
-  return card.findByIdAndRemove(cardId)
+  const userId = req.user._id;
+  return card.findOneAndRemove({ _id: cardId, owner: userId })
     .orFail(new Error('NotValidId'))
     .then((data) => {
       res.status(200).send({ data });

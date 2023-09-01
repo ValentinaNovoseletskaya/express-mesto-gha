@@ -77,10 +77,10 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => user.create({ ...req.body, password: hash })
       .then((data) => {
         const {
-          name, about, avatar, id, email, password,
+          name, about, avatar, id, email,
         } = data;
         return res.status(201).send({
-          name, about, avatar, _id: id, email, password,
+          name, about, avatar, _id: id, email,
         });
       })
       .catch((e) => {

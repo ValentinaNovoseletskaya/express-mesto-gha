@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
 const {
   getUsers,
   getUserById,
@@ -9,8 +10,26 @@ const {
 
 router.get('/', getUsers);
 router.get('/me', getLoggedUser);
-router.get('/:userId', getUserById);
-router.patch('/me', editUser);
-router.patch('/me/avatar', editAvatar);
+router.get(
+  '/:userId',
+  celebrate({
+    params: Joi.object().keys({
+      userId: Joi.string().length(24).hex(),
+    }),
+  }),
+
+  getUserById,
+);
+router.patch('/me', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+  }),
+}), editUser);
+router.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().pattern(/^https?:\/\/(www\.)?[\w-]+(\.[\w-]+)+([/?#][\w-./?#]*)?$/i),
+  }),
+}), editAvatar);
 
 module.exports = router;
