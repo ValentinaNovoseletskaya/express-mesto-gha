@@ -83,7 +83,7 @@ module.exports.createUser = (req, res, next) => {
           const err = duplicateEmailError('Пользователь с такой почтой уже зарегистрирован');
           next(err);
         } else if (e.name === 'ValidationError') {
-          const err = validationError(`${Object.values(e.errors).map((error) => error.message).join(', ')}`);
+          const err = validationError('Ошибка в параметрах ввода');
           next(err);
         } else if (e.name === 'CastError') {
           const err = castError('Ошибка в параметрах ввода');
@@ -122,7 +122,7 @@ module.exports.editUser = (req, res, next) => {
         const err = notFoundError('Пользователь не найден');
         next(err);
       } else if (e.name === 'ValidationError') {
-        const err = validationError(`${Object.values(e.errors).map((error) => error.message).join(', ')}`);
+        const err = validationError('Ошибка в параметрах ввода');
         next(err);
       } else if (e.name === 'CastError') {
         const err = castError('Ошибка в параметрах ввода');
@@ -153,7 +153,7 @@ module.exports.editAvatar = (req, res, next) => {
     })
     .catch((e) => {
       if (e.name === 'ValidationError') {
-        const err = validationError(`${Object.values(e.errors).map((error) => error.message).join(', ')}`);
+        const err = validationError('Ошибка в параметрах ввода');
         next(err);
       } else if (e.name === 'CastError') {
         const err = castError('Ошибка в параметрах ввода');

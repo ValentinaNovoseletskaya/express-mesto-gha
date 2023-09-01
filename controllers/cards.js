@@ -18,7 +18,7 @@ module.exports.createCard = (req, res, next) => {
     .then((data) => res.status(201).send({ data }))
     .catch((e) => {
       if (e.name === 'ValidationError') {
-        const err = validationError(`${Object.values(e.errors).map((error) => error.message).join(', ')}`);
+        const err = validationError('Ошибка в параметрах ввода');
         next(err);
       } else if (e.name === 'CastError') {
         const err = castError('Ошибка в параметрах ввода');
