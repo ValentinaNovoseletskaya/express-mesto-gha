@@ -56,7 +56,7 @@ app.use('/cards', cardRouter);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Страница не найдена' });
 });
-app.use(errors);
+app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   res
