@@ -21,11 +21,11 @@ module.exports.getUserById = (req, res, next) => {
     .orFail(new Error('NotValidId'))
     .then((data) => {
       const {
-        name, about, avatar, id,
+        name, about, avatar, id, email,
       } = data;
       res.status(200).send(
         {
-          name, about, avatar, _id: id,
+          name, about, avatar, _id: id, email,
         },
       );
     })

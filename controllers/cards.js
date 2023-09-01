@@ -33,14 +33,14 @@ module.exports.createCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
-  return card.findById(cardId)
+  card.findById(cardId)
     .orFail(new Error('NotValidId'))
     .then((data) => {
       if (!data.owner.equals(userId)) {
         const err = notOwnerError('Нельзя удалить чужую карточку');
         next(err);
       }
-      res.status(200).send({ data });
+      return card.deleteOne({ _id: cardId }).then(() => res.status(200).send({ data }));
     })
     .catch((e) => {
       if (e.message === 'NotValidId') {
