@@ -68,7 +68,12 @@ module.exports.getLoggedUser = (req, res, next) => {
 };
 
 module.exports.createUser = (req, res, next) => {
-  bcrypt.hash(req.body.password, 10)
+  const reqPassword = req.body.password;
+  if (!reqPassword) {
+    const err = validationError('Необходим пароль');
+    next(err);
+  }
+  bcrypt.hash(reqPassword, 10)
     .then((hash) => user.create({ ...req.body, password: hash })
       .then((data) => {
         const {
