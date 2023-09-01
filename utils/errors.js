@@ -1,5 +1,6 @@
 const ERROR_CODE = 400;
 const AUTH_ERROR = 401;
+const OWNER_ERROR = 403;
 const ERROR_NOT_FOUND = 404;
 const DUPLICATE_ERROR = 409;
 
@@ -12,6 +13,12 @@ module.exports.castError = (message) => {
 module.exports.validationError = (message) => {
   const err = new Error(message);
   err.statusCode = ERROR_CODE;
+  return err;
+};
+
+module.exports.notOwnerError = (message) => {
+  const err = new Error(message);
+  err.statusCode = OWNER_ERROR;
   return err;
 };
 
