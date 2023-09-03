@@ -1,7 +1,8 @@
 const card = require('../models/card');
-const {
-  notFoundError, castError, validationError, notOwnerError,
-} = require('../utils/errors');
+const CastError = require('../middlewares/errors/CastError');
+const NotFoundError = require('../middlewares/errors/NotFoundError');
+const ValidationError = require('../middlewares/errors/ValidationError');
+const OwnerError = require('../middlewares/errors/OwnerError');
 
 module.exports.getCards = (req, res, next) => {
   card.find({})
@@ -20,10 +21,10 @@ module.exports.createCard = (req, res, next) => {
     .then((data) => res.status(201).send({ data }))
     .catch((e) => {
       if (e.name === 'ValidationError') {
-        const err = validationError('Ошибка в параметрах ввода');
+        const err = new ValidationError('Ошибка в параметрах ввода');
         next(err);
       } else if (e.name === 'CastError') {
-        const err = castError('Ошибка в параметрах ввода');
+        const err = new CastError('Ошибка в параметрах ввода');
         next(err);
       }
       next(e);
@@ -37,17 +38,18 @@ module.exports.deleteCard = (req, res, next) => {
     .orFail(new Error('NotValidId'))
     .then((data) => {
       if (!data.owner.equals(userId)) {
-        const err = notOwnerError('Нельзя удалить чужую карточку');
+        const err = new OwnerError('Нельзя удалить чужую карточку');
         next(err);
+        return;
       }
-      return card.deleteOne({ _id: cardId }).then(() => res.status(200).send({ data }));
+      card.deleteOne({ _id: cardId }).then(() => res.status(200).send({ data }));
     })
     .catch((e) => {
       if (e.message === 'NotValidId') {
-        const err = notFoundError('Карточка не найдена');
+        const err = new NotFoundError('Карточка не найдена');
         next(err);
       } else if (e.name === 'CastError') {
-        const err = castError('Ошибка в параметрах ввода');
+        const err = new CastError('Ошибка в параметрах ввода');
         next(err);
       }
       next(e);
@@ -68,10 +70,10 @@ module.exports.likeCard = (req, res, next) => {
     })
     .catch((e) => {
       if (e.message === 'NotValidId') {
-        const err = notFoundError('Карточка не найдена');
+        const err = new NotFoundError('Карточка не найдена');
         next(err);
       } else if (e.name === 'CastError') {
-        const err = castError('Ошибка в параметрах ввода');
+        const err = new CastError('Ошибка в параметрах ввода');
         next(err);
       }
       next(e);
@@ -92,10 +94,10 @@ module.exports.dislikeCard = (req, res, next) => {
     })
     .catch((e) => {
       if (e.message === 'NotValidId') {
-        const err = notFoundError('Карточка не найдена');
+        const err = new NotFoundError('Карточка не найдена');
         next(err);
       } else if (e.name === 'CastError') {
-        const err = castError('Ошибка в параметрах ввода');
+        const err = new CastError('Ошибка в параметрах ввода');
         next(err);
       }
       next(e);
